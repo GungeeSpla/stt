@@ -306,7 +306,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 			this.stageFrame = 0;
 			switch (this.stageIndex) {
 			case 0: // 残り5秒以内
-				if (document.hasFocus && document.hasFocus()) app.sound.play("54321");
+				if (true || document.hasFocus && document.hasFocus()) app.sound.play("54321");
 				else app.sound.play("5");
 				break;
 			case 1: // 残り10秒以内
