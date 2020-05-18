@@ -601,7 +601,7 @@ function StTimer (app, firstSt, stInterval) {
 	this.app              = app;
 	this.firstSt          = firstSt || 2;
 	this.interval         = stInterval || 8;
-	this.timeOffset       = new TimeOffset();
+	this.timeOffset       = new TimeOffset(this);
 	this.stOffset         = parseInt(queries.offset) || 0;
 	this.offsetSec        = 0;
 	this.isEnableStOffset = true;
@@ -649,7 +649,7 @@ function StTimer (app, firstSt, stInterval) {
 			hours += 1;
 		}
 		
-		list.map(st => console.log("- " + this.app.dateFormatter.getMonthText(st)) );
+		// list.map(st => console.log("- " + this.app.dateFormatter.getMonthText(st)) );
 		return list;
 	};
 	
@@ -661,8 +661,9 @@ function StTimer (app, firstSt, stInterval) {
 
 
 //# TimeOffset
-function TimeOffset () {
+function TimeOffset (stTimer) {
 	var self = this;
+	this.stTimer = stTimer;
 	this.resulat = {};
 	this.offsetJST = 0;
 	this.streamOffset = window.queries.streamoffset ? parseFloat(window.queries.streamoffset) * 1000 : 0;
@@ -694,12 +695,61 @@ function TimeOffset () {
 		console.log("✅ NICTサーバにアクセスしました.");
 	};
 	
+	//## results
+	this.results = [];
+	
 	//## getOffsetJST ()
 	this.getOffsetJST = function (callback) {
+	  var that = this;
+	  var minLength = 3;
+	  var index = (this.results.length < minLength) ? 0 : undefined;
+	  var _callback = function (json) {
+	    if (index === 0) {
+	      callback(json);
+	    }
+	    if (that.results.length < minLength) {
+	      if (!isNaN(index)) {
+	        index += 1;
+	      }
+	      setTimeout(() => {
+	        that.getOffsetJSTOnce(index, _callback);
+	      }, 100);
+	    } else {
+        that.results.sort(function(a, b) {
+          return a.dif - b.dif;
+        });
+        var difSum = 0;
+        var difNum = 0;
+        var difAvg;
+        var difStr = '';
+        for (var i = 0; i < that.results.length; i++) {
+          if (i > 0) {
+            difStr += ' / ';
+          }
+          difStr += (that.results[i].dif / 1000).toFixed(3);
+          if (i > 0 && i < that.results.length - 1) {
+            difNum++;
+            difSum += that.results[i].dif;
+          }
+        }
+        difAvg = Math.floor(difSum / difNum);
+        console.log('時差: ' + difStr);
+        console.log('最小と最大を除いた平均時差: ' + difAvg);
+				that.offsetJST = difAvg;
+				that.stTimer.app.renderOffset({
+				  dif: difAvg
+				});
+	    }
+	  }
+	  this.getOffsetJSTOnce(index, _callback);
+	}
+	
+	//## getOffsetJSTOnce ()
+	this.getOffsetJSTOnce = function (index, callback) {
 		var that = this;
 		// アクセスするサーバーをランダムに決定し
 		// ユニークなクエリパラメータを付けてキャッシュを防ぐ
-		var randomIndex = Math.floor(Math.random() * 3); // 0, 1, 2
+		var randomIndex = isNaN(index) ? Math.floor(Math.random() * 3) : index % 3; // 0, 1, 2
 		var randomServerUrl = this.serverUrls[randomIndex];
 		var uniqueQuery = "?" + ((new Date()).getTime() / 1000);
 		// GET
@@ -714,9 +764,11 @@ function TimeOffset () {
 				json.rtt = json.rt - json.it;     // 応答時間
 				json.dif = json.st - (json.it + json.rt) / 2; // JST - PC Clock
 				json.dif = Math.round(json.dif);
-				console.log(json);
+				console.log('発信から受信まで' + (json.rtt / 1000).toFixed(3) + '秒');
+				console.log('端末の時刻はサーバー[' + randomIndex + ']時刻に比べて' + (json.dif / 1000).toFixed(3) + '秒' + ((json.dif > 0) ? '遅れ' : '進み'));
 				// 結果の格納
 				that.result = json;
+				that.results.push(json);
 				that.offsetJST = json.dif;
 				// 結果の表示
 				that.consoleOffset(json);
