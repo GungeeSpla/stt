@@ -338,7 +338,6 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		var offset = (this.stTitle === "ST" && app.stTimer.stOffset) ? sign + app.stTimer.stOffset + "分" : "";
 		var str = this.stTitle + offset;
 		document.title = str + "まで " + this.dateFormatter.getMinText2(this.etaDate);
-		
 	};
 	
 	//## setCtx ()
@@ -367,7 +366,8 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		//if (window.queries.seconly) var getMinText = app.dateFormatter.getMinText2;
 		//else getMinText = app.dateFormatter.getMinText;
 		var str = app.dateFormatter.getMinText(this.etaDate);
-		this.$eta.html(str);
+		var str2 = app.dateFormatter.getMinText2(this.etaDate);
+		this.$eta.html((this.etaDate.getMinutes() >= 1) ? str2 : str);
 		this.clearCanvas();
 		// ゼロのフェードアウトを描画
 		if (this.stageIndex == this.lastStageIndex) {
@@ -392,7 +392,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		var str = (json.dif > 0) ?
 		          "端末の %dif 秒の遅れを補正済み":
 		          "端末の %dif 秒の進みを補正済み";
-		    str = str.replace("%dif", Math.abs(json.dif / 1000));
+		    str = str.replace("%dif", Math.abs(json.dif / 1000).toFixed(3));
 		var $p = $("<p></p>").text(str).addClass("correction_dif");
 		this.$correction.empty();
 		this.$correction.append($p);
@@ -453,10 +453,12 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		clearTimeout(app.updateOffsetId);
 		app.updateOffsetId = setTimeout(app.updateOffset, app.updateOffsetDuration);
 		// NICTにアクセス
-		app.stTimer.timeOffset.getOffsetJST(function(json){
-			app.updateStList();
-			app.renderOffset(json);
-		});
+		setTimeout(() => {
+  		app.stTimer.timeOffset.getOffsetJST(function(json){
+  			app.updateStList();
+  			app.renderOffset(json);
+  		});
+    }, 500);
 	};
 	
 	//## save ()
@@ -712,6 +714,7 @@ function TimeOffset () {
 				json.rtt = json.rt - json.it;     // 応答時間
 				json.dif = json.st - (json.it + json.rt) / 2; // JST - PC Clock
 				json.dif = Math.round(json.dif);
+				console.log(json);
 				// 結果の格納
 				that.result = json;
 				that.offsetJST = json.dif;
