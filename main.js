@@ -523,7 +523,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 //# DateFormatter ()
 function DateFormatter () {
 	
-	this.ketasu = window.queries.ketasu ? parseInt(window.queries.ketasu) : 3;
+	this.ketasu = window.queries.ketasu ? parseInt(window.queries.ketasu) : 1;
 	this.hunbyo = window.queries.hunbyo ? (window.queries.hunbyo === "1") : false; 
 	
 	this.wrap = function (str) {
