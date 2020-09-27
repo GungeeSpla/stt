@@ -449,7 +449,6 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 	
 	//## updateOffset ()
 	this.updateOffset = function () {
-		var self = this;
 		// 次回を予約
 		clearTimeout(app.updateOffsetId);
 		app.updateOffsetId = setTimeout(app.updateOffset, app.updateOffsetDuration);
@@ -458,7 +457,6 @@ function StTimerApp (stTitle, firstSt, stInterval) {
   		app.stTimer.timeOffset.getOffsetJST(function(json){
   			app.updateStList();
   			app.renderOffset(json);
-  			clearTimeout(self.errorTimerId);
   		});
     }, 500);
 	};
@@ -508,7 +506,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		this.sound.loadAll();
 		// NICTにアクセス
 		setTimeout(this.updateOffset, 100);
-		this.errorTimerId = setTimeout(function() {
+		this.stTimer.errorTimerId = setTimeout(function() {
 			$('.st_eta_correction p').text('現在NICTサーバが利用できないため、時差が修正できません。');
 		}, 5000);
 		// ロード
@@ -770,6 +768,7 @@ function TimeOffset (stTimer) {
 		var uniqueQuery = "?" + ((new Date()).getTime() / 1000);
 		// GET
 		$.get(randomServerUrl + uniqueQuery, function (json) {
+  			clearTimeout(that.stTimer.errorTimerId);
 			// StringだったらJSONでオブジェクトにする
 			if (typeof json == "string") json = JSON.parse(json);
 			// オブジェクトが正常に取得でいていれば
