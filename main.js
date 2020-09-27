@@ -45,7 +45,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 	this.sound         = new StSound(app);
 	this.dateFormatter = new DateFormatter();
 	this.isFreeSound   = false;
-	
+	this.errorTimerId = null;
 	this.list        = [];
 	
 	this.bEta        = 0;
@@ -449,6 +449,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 	
 	//## updateOffset ()
 	this.updateOffset = function () {
+		var self = this;
 		// 次回を予約
 		clearTimeout(app.updateOffsetId);
 		app.updateOffsetId = setTimeout(app.updateOffset, app.updateOffsetDuration);
@@ -457,6 +458,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
   		app.stTimer.timeOffset.getOffsetJST(function(json){
   			app.updateStList();
   			app.renderOffset(json);
+  			clearTimeout(self.errorTimerId);
   		});
     }, 500);
 	};
@@ -506,6 +508,9 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		this.sound.loadAll();
 		// NICTにアクセス
 		setTimeout(this.updateOffset, 100);
+		this.errorTimerId = setTimeout(function() {
+			$('.st_eta_correction p').text('NICTサーバへの接続に失敗しました。現在アクセスが集中しています。');
+		}, 5000);
 		// ロード
 		this.load();
 		// ループスタート
@@ -702,45 +707,55 @@ function TimeOffset (stTimer) {
 	//## getOffsetJST ()
 	this.getOffsetJST = function (callback) {
 	  var that = this;
-	  var minLength = 3;
+	  this.results = [];
+	  var minLength = 1;
 	  var index = (this.results.length < minLength) ? 0 : undefined;
 	  var _callback = function (json) {
-	    if (index === 0) {
-	      callback(json);
-	    }
-	    if (that.results.length < minLength) {
-	      if (!isNaN(index)) {
-	        index += 1;
-	      }
-	      setTimeout(() => {
-	        that.getOffsetJSTOnce(index, _callback);
-	      }, 100);
-	    } else {
-        that.results.sort(function(a, b) {
-          return a.dif - b.dif;
-        });
-        var difSum = 0;
-        var difNum = 0;
-        var difAvg;
-        var difStr = '';
-        for (var i = 0; i < that.results.length; i++) {
-          if (i > 0) {
-            difStr += ' / ';
-          }
-          difStr += (that.results[i].dif / 1000).toFixed(3);
-          if (i > 0 && i < that.results.length - 1) {
-            difNum++;
-            difSum += that.results[i].dif;
-          }
-        }
-        difAvg = Math.floor(difSum / difNum);
-        console.log('時差: ' + difStr);
-        console.log('最小と最大を除いた平均時差: ' + difAvg);
+		if (index === 0) {
+		  callback(json);
+		}
+		if (that.results.length < minLength) {
+		  if (!isNaN(index)) {
+			index += 1;
+		  }
+		  setTimeout(() => {
+			that.getOffsetJSTOnce(index, _callback);
+		  }, 100);
+		} else {
+			that.results.sort(function(a, b) {
+			  return a.dif - b.dif;
+			});
+			if (minLength < 3) {
+				var dif = that.results[0].dif;
+				console.log('時差: ' + (dif / 1000).toFixed(3));
+				that.offsetJST = dif;
+				that.stTimer.app.renderOffset({
+				  dif: dif
+				});
+			} else {
+				var difSum = 0;
+				var difNum = 0;
+				var difAvg;
+				var difStr = '';
+				for (var i = 0; i < that.results.length; i++) {
+				  if (i > 0) {
+					difStr += ' / ';
+				  }
+				  difStr += (that.results[i].dif / 1000).toFixed(3);
+				  if (i > 0 && i < that.results.length - 1) {
+					difNum++;
+					difSum += that.results[i].dif;
+				  }
+				}
+				difAvg = Math.floor(difSum / difNum);
+				console.log('時差: ' + difStr);
+				console.log('最小と最大を除いた平均時差: ' + difAvg);
 				that.offsetJST = difAvg;
 				that.stTimer.app.renderOffset({
 				  dif: difAvg
 				});
-	    }
+			}
+		}
 	  }
 	  this.getOffsetJSTOnce(index, _callback);
 	}
