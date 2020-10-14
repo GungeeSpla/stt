@@ -50,7 +50,7 @@ function getClientTimeLag(callback) {
 			var clientAvgTime = (clientTime + clientTime2) / 2;
 			dif = serverTime - clientAvgTime;
 		} catch(e) {
-			callback(dif);
+			return callback(dif);
 		}
 		callback(dif);
 	}).fail(function() {
