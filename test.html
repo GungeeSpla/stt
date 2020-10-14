@@ -10,12 +10,6 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
-/*
-var x_timer = 'S1602674787.604632,VS0,VE180';
-x_timer = parseInt(x_timer.split(',')[0].replace(/[^0-9|.]/g,'')) * 1000;
-var a = new Date(x_timer);
-console.log(a);
-*/
 function getServerDate(callback){
 	$.ajax({
 		type : 'HEAD',
@@ -23,13 +17,13 @@ function getServerDate(callback){
 		cache : false
 	}).done(function(data, textStatus, xhr) {
 		try {
-			var xTimer = xhr.getResponseHeader("X-Timer");
-			xTimer = parseFloat(xTimer.split(',')[0].replace(/[^0-9|.]/g,''));
-			var milli = parseInt(String(xTimer).split('.')[1] || 0);
-			if (milli >= 5) {
-				xTimer -= 1;
+			var xTimer = xhr.getResponseHeader("X-Timer"); // 'S1602674787.604632,VS0,VE180'
+			xTimer = parseFloat(xTimer.split(',')[0].replace(/[^0-9|.]/g,'')); // 1602674787.604632
+			var milli = parseFloat('0.' + String(xTimer).split('.')[1] || 0); // 0.604632
+			if (milli >= 0.5) {
+				xTimer -= 1; // 1602674786.604632
 			}
-			xTimer = xTimer * 1000;
+			xTimer = xTimer * 1000; // 1602674786604.632
 			var result = new Date(xTimer);
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
 			var now = new Date();
