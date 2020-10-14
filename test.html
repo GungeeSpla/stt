@@ -10,6 +10,8 @@ function getServerDate(callback){
 		cache : false
 	}).done(function(data, textStatus, xhr) {
 		try {
+			console.log(xhr.getResponseHeader("X-Timer"));
+			console.log(xhr.getResponseHeader("Date"));
 			var result = new Date(xhr.getResponseHeader("Date"));
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
 		} catch(e) {
