@@ -9,11 +9,11 @@
 <script>
 
 getClientTimeLag(function(dif) {
-	var difStr = Math.abs(dif).toFixed(3);
+	var difStr = Math.abs(dif / 1000).toFixed(3);
 	if (dif > 0) {
-		$('#dif').html(`あなたの端末の時計は${difStr}秒<b>進んで</b>います。`);
+		$('#dif').html(`あなたの端末は${difStr}秒<b>進んで</b>います。`);
 	} else {
-		$('#dif').html(`あなたの端末の時計は${difStr}秒<b>遅れて</b>います。`);
+		$('#dif').html(`あなたの端末は${difStr}秒<b>遅れて</b>います。`);
 	}
 });
 
@@ -44,14 +44,13 @@ function getClientTimeLag(callback) {
 			}
 			// JavaScriptはUNIXタイムスタンプをミリ秒単位で扱うので1000倍する
 			var serverTime = xtimer * 1000; // 1602674786604.632
-			// サーバーのDate
-			var serverDate = new Date(serverTime);
+			dif = clientTime - serverTime;
+			/*
 			var clientDate2 = new Date();
 			var clientTime2 = clientDate2.getTime();
 			var clientAvgTime = (clientTime + clientTime2) / 2;
-			dif = clientTime - serverTime;
-			console.log(clientAvgTime - serverTime);
-			console.log(clientTime - serverTime);
+			dif = clientAvgTime - serverTime;
+			*/
 		} catch(e) {
 			callback(dif);
 		}
