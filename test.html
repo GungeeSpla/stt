@@ -31,7 +31,7 @@ function getServerDate(callback){
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
 			var dif = clientDate.getTime() - xTimer;
 			var str;
-			if (dif) {
+			if (dif > 0) {
 				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒<b>進んで</b>います。';
 			} else {
 				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒<b>遅れて</b>います。';
