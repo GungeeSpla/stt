@@ -4,55 +4,62 @@
 <meta charset="UTF-8">
 </head>
 <body>
-<p><strong>github.ioのサーバー時刻:</strong> <span id="server"></span></p>
-<p><strong>端末の時刻:</strong> <span id="client"></span></p>
-<p><strong>時差:</strong> <span id="dif"></span></p>
-
+<p><span id="dif">通信中</span></p>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
-getServerDate(makeHTML);
-var clientDate = new Date();
-$("#client").html(clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds());
-function getServerDate(callback){
+
+getClientTimeLag(function(dif) {
+	var difStr = Math.abs(dif).toFixed(3);
+	if (dif > 0) {
+		$('#dif').html(`あなたの端末の時計は${difStr}秒<b>進んで</b>います。`);
+	} else {
+		$('#dif').html(`あなたの端末の時計は${difStr}秒<b>遅れて</b>います。`);
+	}
+});
+
+/**
+ * 参考: https://parashuto.com/rriver/development/getting-server-time-with-javascript
+ */
+function getClientTimeLag(callback) {
+	// クライアントのDate
+	var clientDate = new Date();
+	var clientTime = clientDate.getTime();
+	var dif = 0;
+	// このHTMLファイルをHTTP通信で読み込んで'X-Timer'ヘッダーの値を確認する
 	$.ajax({
 		type : 'HEAD',
 		url :  window.location.href,
 		cache : false
 	}).done(function(data, textStatus, xhr) {
 		try {
-			var xTimer = xhr.getResponseHeader("X-Timer"); // 'S1602674787.604632,VS0,VE180'
-			xTimer = parseFloat(xTimer.split(',')[0].replace(/[^0-9|.]/g,'')); // 1602674787.604632
-			var milli = parseFloat('0.' + String(xTimer).split('.')[1] || 0); // 0.604632
-			if (milli >= 0.5) {
-				xTimer -= 1; // 1602674786.604632
+			// 'X-Timer'ヘッダーの値を取り出す
+			var xtimer = xhr.getResponseHeader('X-Timer'); // 'S1602674787.604632,VS0,VE180'
+			// UNIXタイムスタンプを数値型で取り出す
+			xtimer = parseFloat(xtimer.split(',')[0].replace(/[^0-9|.]/g,'')); // 1602674787.604632
+			// 小数部分を取り出す
+			var milliseconds = parseFloat('0.' + String(xtimer).split('.')[1] || 0); // 0.604632
+			// 小数部分が0.5以上のとき整数部分が1大きくなる仕様があるので修正する
+			if (milliseconds >= 0.5) {
+				xtimer -= 1; // 1602674786.604632
 			}
-			xTimer = xTimer * 1000; // 1602674786604.632
-			var result = new Date(xTimer);
-			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
-			var dif = clientDate.getTime() - xTimer;
-			var str;
-			if (dif > 0) {
-				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(3) + ' 秒<b>進んで</b>います。';
-			} else {
-				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(3) + ' 秒<b>遅れて</b>います。';
-			}
-			$("#dif").html(str);
+			// JavaScriptはUNIXタイムスタンプをミリ秒単位で扱うので1000倍する
+			var serverTime = xtimer * 1000; // 1602674786604.632
+			// サーバーのDate
+			var serverDate = new Date(serverTime);
+			var clientDate2 = new Date();
+			var clientTime2 = clientDate2.getTime();
+			var clientAvgTime = (clientTime + clientTime2) / 2;
+			dif = clientTime - serverTime;
+			console.log(clientAvgTime - serverTime);
+			console.log(clientTime - serverTime);
 		} catch(e) {
-			var result = new Date();
-			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
+			callback(dif);
 		}
-		callback(result);
+		callback(dif);
 	}).fail(function() {
-		var result = new Date();
-		result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
-		callback(result);
+		callback(dif);
 	});
 }
-
-function makeHTML(result){
-	$("#server").html(result);
-}
-
 </script>
 </body>
 </html>
