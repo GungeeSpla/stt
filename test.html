@@ -1,0 +1,44 @@
+<p><strong>Server Time:</strong> <span id="server"></span></p>
+<p><strong>Client Time:</strong> <span id="client"></span></p>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+function getServerDate(callback){
+	$.ajax({
+		type : 'HEAD',
+		url :  window.location.href,
+		cache : false
+	}).done(function(data, textStatus, xhr) {
+		try {
+			var result = new Date(xhr.getResponseHeader("Date"));
+			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
+		} catch(e) {
+			var result = new Date();
+			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
+		}
+		callback(result);
+	}).fail(function() {
+		var result = new Date();
+		result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
+		callback(result);
+	});
+}
+
+function makeHTML(result){
+	$("#server").html(result);
+}
+
+getServerDate(makeHTML);
+
+var clientDate = new Date();
+clientDate = clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds();
+$("#client").html(clientDate);
+</script>
+<!--
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script>
+$.getJSON('https://script.google.com/macros/s/AKfycbyKwfnOtK_VsRKXpGu83ccozbgwpbgXIbSD4gqpKTcCOpnEM_xC/exec?data_type=row_records', function(data) {
+	console.log(data);
+});
+</script>
+-->
