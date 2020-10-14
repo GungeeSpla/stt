@@ -17,7 +17,9 @@ function getServerDate(callback){
 	}).done(function(data, textStatus, xhr) {
 		try {
 			var xTimer = xhr.getResponseHeader("X-Timer");
-			xTimer = parseInt(xTimer.split(',')[0].replace(/[^0-9|.]/g,'')) * 1000;
+			console.log(xTimer);
+			xTimer = parseFloat(xTimer.split(',')[0].replace(/[^0-9|.]/g,'')) * 1000;
+			console.log(xTimer);
 			var result = new Date(xTimer);
 			//var result = new Date(xhr.getResponseHeader("Date"));
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
