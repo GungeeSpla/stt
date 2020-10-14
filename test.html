@@ -46,6 +46,7 @@ function getClientTimeLag(callback) {
 			var serverTime = xtimer * 1000; // 1602674786604.632
 			dif = clientTime - serverTime;
 			/*
+			この時点でのクライアントのDateを取って平均したほうがよいか？
 			var clientDate2 = new Date();
 			var clientTime2 = clientDate2.getTime();
 			var clientAvgTime = (clientTime + clientTime2) / 2;
