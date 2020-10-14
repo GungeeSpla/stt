@@ -45,13 +45,11 @@ function getClientTimeLag(callback) {
 			// JavaScriptはUNIXタイムスタンプをミリ秒単位で扱うので1000倍する
 			var serverTime = xtimer * 1000; // 1602674786604.632
 			dif = clientTime - serverTime;
-			/*
-			この時点でのクライアントのDateを取って平均したほうがよいか？
+			// この時点でのクライアントのDateを取って平均したほうがよいか
 			var clientDate2 = new Date();
 			var clientTime2 = clientDate2.getTime();
 			var clientAvgTime = (clientTime + clientTime2) / 2;
 			dif = clientAvgTime - serverTime;
-			*/
 		} catch(e) {
 			callback(dif);
 		}
