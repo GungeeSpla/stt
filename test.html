@@ -12,9 +12,7 @@
 <script>
 getServerDate(makeHTML);
 var clientDate = new Date();
-clientDate = clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds();
-$("#client").html(clientDate);
-
+$("#client").html(clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds());
 function getServerDate(callback){
 	$.ajax({
 		type : 'HEAD',
@@ -34,11 +32,11 @@ function getServerDate(callback){
 			var dif = clientDate.getTime() - xTimer;
 			var str;
 			if (dif) {
-				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒進んでいます。';
+				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒<b>進んで</b>います。';
 			} else {
-				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒進んでいます。';
+				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒<b>遅れて</b>います。';
 			}
-			$("#dif").text(str);
+			$("#dif").html(str);
 		} catch(e) {
 			var result = new Date();
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
