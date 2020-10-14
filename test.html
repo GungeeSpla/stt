@@ -11,9 +11,9 @@
 getClientTimeLag(function(dif) {
 	var difStr = Math.abs(dif / 1000).toFixed(3);
 	if (dif > 0) {
-		$('#dif').html(`あなたの端末は${difStr}秒<b>進んで</b>います。`);
-	} else {
 		$('#dif').html(`あなたの端末は${difStr}秒<b>遅れて</b>います。`);
+	} else {
+		$('#dif').html(`あなたの端末は${difStr}秒<b>進んで</b>います。`);
 	}
 });
 
@@ -44,12 +44,11 @@ function getClientTimeLag(callback) {
 			}
 			// JavaScriptはUNIXタイムスタンプをミリ秒単位で扱うので1000倍する
 			var serverTime = xtimer * 1000; // 1602674786604.632
-			dif = clientTime - serverTime;
 			// この時点でのクライアントのDateを取って平均したほうがよいか
 			var clientDate2 = new Date();
 			var clientTime2 = clientDate2.getTime();
 			var clientAvgTime = (clientTime + clientTime2) / 2;
-			dif = clientAvgTime - serverTime;
+			dif = serverTime - clientAvgTime;
 		} catch(e) {
 			callback(dif);
 		}
