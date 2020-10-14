@@ -10,6 +10,11 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
+getServerDate(makeHTML);
+var clientDate = new Date();
+clientDate = clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds();
+$("#client").html(clientDate);
+
 function getServerDate(callback){
 	$.ajax({
 		type : 'HEAD',
@@ -26,8 +31,7 @@ function getServerDate(callback){
 			xTimer = xTimer * 1000; // 1602674786604.632
 			var result = new Date(xTimer);
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
-			var now = new Date();
-			var dif = now.getTime() - xTimer;
+			var dif = clientDate.getTime() - xTimer;
 			var str;
 			if (dif) {
 				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒進んでいます。';
@@ -51,11 +55,6 @@ function makeHTML(result){
 	$("#server").html(result);
 }
 
-getServerDate(makeHTML);
-
-var clientDate = new Date();
-clientDate = clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds();
-$("#client").html(clientDate);
 </script>
 </body>
 </html>
