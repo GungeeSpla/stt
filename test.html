@@ -1,5 +1,12 @@
-<p><strong>Server Time:</strong> <span id="server"></span></p>
-<p><strong>Client Time:</strong> <span id="client"></span></p>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+<p><strong>github.ioのサーバー時刻:</strong> <span id="server"></span></p>
+<p><strong>端末の時刻:</strong> <span id="client"></span></p>
+<p><strong>時差:</strong> <span id="dif"></span></p>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
@@ -17,12 +24,23 @@ function getServerDate(callback){
 	}).done(function(data, textStatus, xhr) {
 		try {
 			var xTimer = xhr.getResponseHeader("X-Timer");
-			console.log(xTimer);
-			xTimer = parseFloat(xTimer.split(',')[0].replace(/[^0-9|.]/g,'')) * 1000;
-			console.log(xTimer);
+			xTimer = parseFloat(xTimer.split(',')[0].replace(/[^0-9|.]/g,''));
+			var milli = parseInt(String(xTimer).split('.')[1] || 0);
+			if (milli >= 5) {
+				xTimer -= 1;
+			}
+			xTimer = xTimer * 1000;
 			var result = new Date(xTimer);
-			//var result = new Date(xhr.getResponseHeader("Date"));
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
+			var now = new Date();
+			var dif = now.getTime() - xTimer;
+			var str;
+			if (dif) {
+				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒進んでいます。';
+			} else {
+				str = 'あなたの端末は ' + Math.abs((dif / 1000)).toFixed(2) + ' 秒進んでいます。';
+			}
+			$("#dif").text(str);
 		} catch(e) {
 			var result = new Date();
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
@@ -45,11 +63,5 @@ var clientDate = new Date();
 clientDate = clientDate.getHours() + ':' + clientDate.getMinutes() + ':' + clientDate.getSeconds() + '.' + clientDate.getMilliseconds();
 $("#client").html(clientDate);
 </script>
-<!--
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<script>
-$.getJSON('https://script.google.com/macros/s/AKfycbyKwfnOtK_VsRKXpGu83ccozbgwpbgXIbSD4gqpKTcCOpnEM_xC/exec?data_type=row_records', function(data) {
-	console.log(data);
-});
-</script>
--->
+</body>
+</html>
