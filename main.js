@@ -455,6 +455,7 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		// NICTにアクセス
 		setTimeout(() => {
   		app.stTimer.timeOffset.getOffsetJST(function(json){
+  			app.stTimer.timeOffset.offsetJST = json.dif;
   			app.updateStList();
   			app.renderOffset(json);
   		});
@@ -506,9 +507,11 @@ function StTimerApp (stTitle, firstSt, stInterval) {
 		this.sound.loadAll();
 		// NICTにアクセス
 		setTimeout(this.updateOffset, 100);
+		/*
 		this.stTimer.errorTimerId = setTimeout(function() {
 			$('.st_eta_correction p').text('現在NICTサーバが利用できないため、時差が修正できません。');
 		}, 5000);
+		*/
 		// ロード
 		this.load();
 		// ループスタート
@@ -794,6 +797,45 @@ function TimeOffset (stTimer) {
 			}
 		});
 	};
+	
+	//## getOffsetJST (callback)
+	this.getOffsetJST = function (callback) {
+		// クライアントのDate
+		var clientDate = new Date();
+		var clientTime = clientDate.getTime();
+		var dif = 0;
+		// このHTMLファイルをHTTP通信で読み込んで'X-Timer'ヘッダーの値を確認する
+		$.ajax({
+			type : 'HEAD',
+			url :  window.location.href,
+			cache : false
+		}).done(function(data, textStatus, xhr) {
+			try {
+				// 'X-Timer'ヘッダーの値を取り出す
+				var xtimer = xhr.getResponseHeader('X-Timer'); // 'S1602674787.604632,VS0,VE180'
+				// UNIXタイムスタンプを数値型で取り出す
+				xtimer = parseFloat(xtimer.split(',')[0].replace(/[^0-9|.]/g,'')); // 1602674787.604632
+				// 小数部分を取り出す
+				var milliseconds = parseFloat('0.' + String(xtimer).split('.')[1] || 0); // 0.604632
+				// 小数部分が0.5以上のとき整数部分が1大きくなる仕様があるので修正する
+				if (milliseconds >= 0.5) {
+					xtimer -= 1; // 1602674786.604632
+				}
+				// JavaScriptはUNIXタイムスタンプをミリ秒単位で扱うので1000倍する
+				var serverTime = xtimer * 1000; // 1602674786604.632
+				// この時点でのクライアントのDateを取って平均したほうがよいか
+				var clientDate2 = new Date();
+				var clientTime2 = clientDate2.getTime();
+				var clientAvgTime = (clientTime + clientTime2) / 2;
+				dif = serverTime - clientAvgTime;
+			} catch(e) {
+				return callback({ dif });
+			}
+			callback({ dif });
+		}).fail(function() {
+			callback({ dif });
+		});
+	}
 	
 	this.getJqueryObject();
 	return this;
