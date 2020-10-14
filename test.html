@@ -3,6 +3,10 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
+var x_timer = 'S1602674787.604632,VS0,VE180';
+x_timer = parseInt(x_timer.split(',')[0])
+var a = new Date(x_timer);
+console.log(a);
 function getServerDate(callback){
 	$.ajax({
 		type : 'HEAD',
@@ -10,9 +14,10 @@ function getServerDate(callback){
 		cache : false
 	}).done(function(data, textStatus, xhr) {
 		try {
-			console.log(xhr.getResponseHeader("X-Timer"));
-			console.log(xhr.getResponseHeader("Date"));
-			var result = new Date(xhr.getResponseHeader("Date"));
+			var xTimer = xhr.getResponseHeader("X-Timer");
+			xTimer = parseInt(xTimer.split(',')[0]);
+			var result = new Date(xTimer);
+			//var result = new Date(xhr.getResponseHeader("Date"));
 			result = result.getHours() + ':' + result.getMinutes() + ':' + result.getSeconds() + '.' + result.getMilliseconds();
 		} catch(e) {
 			var result = new Date();
